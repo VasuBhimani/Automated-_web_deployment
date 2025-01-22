@@ -5,7 +5,7 @@ import os
 from git import Repo
 from test import generate_tree
 from test import save_file_tree
-from test import send_prompt_request
+from test import docker_file_creation
 import shutil
 import subprocess
 import stat
@@ -133,28 +133,6 @@ def url_form():
     
     return render_template("index.html", user=session["user"])
 
-#------------------------------------------------------------------------------------------------------------------------
-
-# @app.route("/", methods=["GET", "POST"])
-# def index():
-#     if request.method == "POST":
-#         build_commands = request.form["build_commands"]
-#         ports = request.form["ports"]
-#         env_var_keys = request.form.getlist("env_var_key[]")
-#         env_var_values = request.form.getlist("env_var_value[]")
-#         env_vars = dict(zip(env_var_keys, env_var_values)) 
-
-#         # Save the inputs to a text file
-#         with open("dockerfile_info.txt", "w") as file:
-
-#             file.write(f"Build Commands: {build_commands}\n")
-#             file.write(f"Ports: {ports}\n")
-
-#             file.write(f"Environment Variables: {env_vars}\n")
-        
-#         return redirect(url_for('index'))
-
-#     return render_template("projectinfo.html")
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -208,7 +186,7 @@ def edit_folder(folder_name):
     if "user" not in session:
         flash("Please log in first.", "warning")
         return redirect(url_for("login"))
-
+    session['project_name'] = folder_name
     # Render a new page for editing
     return render_template("projectinfo.html", folder_name=folder_name)
 
@@ -217,22 +195,26 @@ def edit_folder(folder_name):
 
 @app.route("/submit", methods=["GET", "POST"])
 def submit():
+    project_name = session['project_name']
+    username = session["user"]
     if request.method == "POST":
         build_commands = request.form["build_commands"]
         ports = request.form["ports"]
         env_var_keys = request.form.getlist("env_var_key[]")
         env_var_values = request.form.getlist("env_var_value[]")
         env_vars = dict(zip(env_var_keys, env_var_values)) 
-
         # Save the inputs to a text file
-        with open("dockerfile_info.txt", "w") as file:
+        
+        folder_path = os.path.join("download", username, project_name)
+        file_path = os.path.join(folder_path, "dockerfile_info.txt")
 
+        # Save the inputs to the text file
+        with open(file_path, "w") as file:
             file.write(f"Build Commands: {build_commands}\n")
             file.write(f"Ports: {ports}\n")
-
             file.write(f"Environment Variables: {env_vars}\n")
         
-        thread = threading.Thread(target=testing)
+        thread = threading.Thread(target=testing, args=(project_name, username))
         thread.start()
         # return redirect(url_for('index'))
         return render_template("loading.html")
@@ -242,17 +224,20 @@ def submit():
 
 
 
-# Example testing function (long-running task)
-def testing():
+
+def testing(project_name,username):
     global task_done
-    print("Starting testing function...")
-    folder_path = os.path.join("download",username, repo_name)
-    os.makedirs(folder_path, exist_ok=True)
-    send_prompt_request(file_name, extra_text) # calling api from test.py file
-    time.sleep(5)  # Simulate a long-running task
+    folder_path = os.path.join("download",username, project_name,project_name)
+    # os.makedirs(folder_path, exist_ok=True)
+    dockerfile_path = os.path.join(folder_path, "Dockerfile")
+    with open(dockerfile_path, 'w') as dockerfile:
+        dockerfile.write("# Your Dockerfile content goes here")
+    
+    # docker_file_creation(file_name, extra_text) # calling api from test.py file
+    time.sleep(5)  
     print("Testing function completed!")
 
-    # Update global variable indicating task completion
+
     task_done = True
 
 @app.route("/status", methods=["GET"])
@@ -268,21 +253,6 @@ def status():
 def test():
     # Render the final page after the task is completed
     return render_template("home.html")
-
-# def testing():
-#     print("Testing")
-#     # subprocess.run(["python", "test.py"])
-
-# @app.route("/edit/<folder_name>")
-# def edit_folder(folder_name):
-#     if "user" not in session:
-#         flash("Please log in first.", "warning")
-#         return redirect(url_for("login"))
-
-#     # Placeholder for edit functionality
-#     flash(f"Edit functionality for folder '{folder_name}' goes here.", "info")
-#     return redirect(url_for("folder_disply"))
-
 
 #--------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
