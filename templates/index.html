@@ -11,8 +11,10 @@
   </head>
   <body>
     <div class="container mt-5">
-      <h1 class="text-center">GitHub Repository Cloner</h1>
-      <form method="POST" action="/" class="mt-4">
+      <h1 class="text-center">GitHub Repository Cloner : hello {{ user }}</h1>
+      <!-- <!-- <form method="POST" action="/" class="mt-4"> -->
+        <!-- <form method="POST" class="mt-4" action="/git_url_submition" >  -->
+        <form method="POST" class="mt-4" action="{{ url_for('url_form') }}">
         <div class="mb-3">
           <label for="github_url" class="form-label"
             >GitHub Repository URL</label

@@ -32,7 +32,8 @@
       <p>{{ repo_name or 'No repository provided' }}</p>
 
       <h1 class="heading"> Enter Your Project details </h1>
-      <form method="POST" class="docker-form">
+      <!-- <form method="POST" class="docker-form"> -->
+        <form method="POST" class="docker-form" action="/submit" class="mt-4">
         <div class="form-group">
           <label for="build_commands">Build Commands:</label>
           <input
