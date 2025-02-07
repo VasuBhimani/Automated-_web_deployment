@@ -29,10 +29,10 @@ def generate_tree(root_path, level=0):
             tree_str += f"{indent}{item}\n"
     return tree_str
 
-def save_file_tree(repo_name, repo_path):
+def save_file_tree(repo_name, repo_path,username):
     tree_str = generate_tree(repo_path)
     # tree_file_path = os.path.join(DOWNLOAD_FOLDER, f"{repo_name}_structure.txt")
-    tree_file_path = os.path.join('download',repo_name, f"{repo_name}_structure.txt")
+    tree_file_path = os.path.join('download',username, repo_name, f"{repo_name}.txt")
 
     with open(tree_file_path, 'w') as f:
         f.write(tree_str)
@@ -110,7 +110,6 @@ def projectinfo():
         return redirect(url_for('index'))
 
     return render_template("projectinfo.html")
-
 
 
 

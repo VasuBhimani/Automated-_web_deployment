@@ -3,9 +3,14 @@ from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from git import Repo
-from test import generate_tree
-from test import save_file_tree
-from test import docker_file_creation
+
+
+from app import generate_tree
+from app import save_file_tree
+from docker_file_creation import docker_file_creation
+from build_docker_image import build_docker_image
+from docker_file_recreation import docker_file_recreation
+
 import shutil
 import subprocess
 import stat
@@ -222,8 +227,8 @@ def submit():
 
 
 
-
-
+# extra_text = "create production ready docker file for this file structure and just create docker file with following Best Practices dont give me other explanation or comments and without markdown"
+extra_text = "Create a production-ready Dockerfile for this project structure using best practices. Do not add markdown formatting, backticks, or explanations—just return the Dockerfile content as plain text."
 
 def testing(project_name,username):
     global task_done
@@ -232,9 +237,19 @@ def testing(project_name,username):
     dockerfile_path = os.path.join(folder_path, "Dockerfile")
     with open(dockerfile_path, 'w') as dockerfile:
         dockerfile.write("# Your Dockerfile content goes here")
+    print("docker file creation started")
+    docker_file_creation(username,project_name,extra_text) # calling api from test.py file
     
-    # docker_file_creation(file_name, extra_text) # calling api from test.py file
-    time.sleep(5)  
+    while True:
+        print("while loop performing---------------------")
+        success = build_docker_image(username,project_name)
+        if success:
+            break
+        else:
+            print("Retrying in 5 seconds....................")
+            docker_file_recreation(username,project_name)
+            time.sleep(1) 
+    # time.sleep(5)  
     print("Testing function completed!")
 
 
@@ -254,6 +269,6 @@ def test():
     # Render the final page after the task is completed
     return render_template("home.html")
 
-#--------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)

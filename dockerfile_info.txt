@@ -1,3 +1,0 @@
-Build Commands: npm run
-Ports: 1234
-Environment Variables: {}
